@@ -89,28 +89,68 @@ $("clearBtn").addEventListener("click", () => {
   items = []; saveItems(); render(); showMessage("فهرست پاک شد.", "success");
 });
 $("pdfBtn").addEventListener("click", () => {
-  if (!items.length) { showMessage("برای ساخت PDF ابتدا کالایی ثبت کنید.", "error"); return; }
-  if (!window.jspdf || !window.jspdf.jsPDF) {
-    showMessage("کتابخانه PDF بارگذاری نشد. اینترنت را بررسی و صفحه را دوباره باز کنید.", "error");
+  if (!items.length) {
+    showMessage("برای ساخت PDF ابتدا کالایی ثبت کنید.", "error");
     return;
   }
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-  doc.setFont("helvetica");
-  doc.setFontSize(18);
-  doc.text("Inventory Item List", 148, 16, { align: "center" });
-  doc.setFontSize(10);
-  doc.text(`Generated: ${new Date().toLocaleDateString("en-CA")}`, 14, 24);
-  doc.autoTable({
-    startY: 30,
-    head: [["No.", "Product name", "Barcode", "Unit", "Total quantity"]],
-    body: items.map((item, index) => [index + 1, item.name, item.barcode, item.unit, String(item.quantity)]),
-    styles: { font: "helvetica", fontSize: 10, cellPadding: 3, overflow: "linebreak" },
-    headStyles: { fillColor: [16, 35, 62], textColor: [255, 255, 255] },
-    alternateRowStyles: { fillColor: [239, 246, 255] },
-    margin: { left: 14, right: 14 }
-  });
-  doc.save("inventory-list.pdf");
-  showMessage("فایل PDF آماده شد.", "success");
+
+  // Render the report as real HTML so the browser handles Persian shaping and RTL correctly.
+  const rows = items.map((item, index) => `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${escapeHtml(item.name)}</td>
+      <td dir="ltr">${escapeHtml(item.barcode)}</td>
+      <td>${escapeHtml(item.unit)}</td>
+      <td>${escapeHtml(String(item.quantity))}</td>
+    </tr>`).join("");
+
+  const report = `<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>فهرست کالاها</title>
+<style>
+  @page { size: A4 landscape; margin: 14mm; }
+  * { box-sizing: border-box; }
+  body { font-family: Tahoma, Arial, sans-serif; direction: rtl; color: #172033; margin: 0; }
+  h1 { text-align: center; font-size: 22px; margin: 0 0 8px; }
+  .meta { display: flex; justify-content: space-between; font-size: 11px; color: #536078; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { border: 1px solid #cbd5e1; padding: 9px 8px; text-align: right; overflow-wrap: anywhere; }
+  th { background: #14233e; color: white; }
+  tbody tr:nth-child(even) { background: #f1f5f9; }
+  td:first-child, th:first-child { text-align: center; width: 50px; }
+  td:nth-child(3) { text-align: left; font-family: Arial, sans-serif; }
+  @media screen { body { padding: 22px; } .print-hint { text-align:center; color:#536078; margin:0 0 18px; font-size:12px; } }
+  @media print { .print-hint { display:none; } }
+</style>
+</head>
+<body>
+<p class="print-hint">در پنجره چاپ، مقصد را روی «ذخیره به‌صورت PDF» قرار دهید.</p>
+<h1>فهرست کالاهای ثبت‌شده</h1>
+<div class="meta"><span>تاریخ تهیه: ${new Date().toLocaleDateString("fa-IR")}</span><span>تعداد اقلام: ${items.length.toLocaleString("fa-IR")}</span></div>
+<table>
+<thead><tr><th>ردیف</th><th>نام کالا</th><th>بارکد</th><th>واحد</th><th>مقدار کل</th></tr></thead>
+<tbody>${rows}</tbody>
+</table>
+<script>window.addEventListener('load', () => setTimeout(() => window.print(), 350));<\/script>
+</body></html>`;
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    showMessage("پنجره PDF مسدود شد؛ اجازه بازشدن پنجره‌های جدید را در مرورگر فعال کنید.", "error");
+    return;
+  }
+  printWindow.document.open();
+  printWindow.document.write(report);
+  printWindow.document.close();
+  showMessage("گزارش آماده است؛ در پنجره چاپ گزینه «ذخیره به‌صورت PDF» را انتخاب کنید.", "success");
 });
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[char]);
+}
 render();
