@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>انبار نئون | ثبت کالا</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="glow glow-one"></div><div class="glow glow-two"></div>
+<main class="app">
+  <header class="top">
+    <div class="logo">N<span>•</span></div>
+    <div><p class="eyebrow">INVENTORY SYSTEM</p><h1>ثبت و مدیریت کالا</h1></div>
+    <div class="counter"><span>تعداد اقلام</span><strong id="itemCount">۰</strong></div>
+  </header>
+
+  <section class="panel">
+    <h2><span class="status-dot"></span> ثبت کالای جدید</h2>
+    <form id="itemForm" autocomplete="off">
+      <div class="fields">
+        <label>نام کالا
+          <input id="productName" type="text" placeholder="مثلاً کابل شبکه" required>
+        </label>
+        <label>بارکد
+          <input id="barcode" type="text" inputmode="numeric" placeholder="بارکد کالا" required>
+        </label>
+        <label>واحد
+          <select id="unit">
+            <option value="عدد" selected>عدد</option>
+            <option value="کیلوگرم">کیلوگرم</option>
+            <option value="گرم">گرم</option>
+            <option value="لیتر">لیتر</option>
+            <option value="متر">متر</option>
+            <option value="سانتی‌متر">سانتی‌متر</option>
+            <option value="بسته">بسته</option>
+            <option value="کارتن">کارتن</option>
+            <option value="جفت">جفت</option>
+            <option value="رول">رول</option>
+          </select>
+        </label>
+        <label>تعداد / مقدار
+          <input id="quantity" type="number" min="0.001" step="any" placeholder="مقدار را وارد کنید" required>
+        </label>
+      </div>
+      <button class="primary" type="submit"><span>＋</span> ثبت کالا</button>
+      <p id="message" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <section class="list-section">
+    <div class="list-heading"><div><p class="eyebrow">YOUR INVENTORY</p><h2>کالاهای ثبت‌شده</h2></div><span id="totalBadge" class="badge">۰ کالا</span></div>
+    <div id="emptyState" class="empty"><div class="empty-icon">▤</div><strong>هنوز کالایی ثبت نشده</strong><p>اطلاعات کالا را از بخش بالا وارد کنید.</p></div>
+    <div class="table-wrap" id="tableWrap" hidden>
+      <table>
+        <thead><tr><th>ردیف</th><th>نام کالا</th><th>بارکد</th><th>واحد</th><th>مقدار کل</th><th>عملیات</th></tr></thead>
+        <tbody id="itemsBody"></tbody>
+      </table>
+    </div>
+  </section>
+  <footer class="bottom">
+    <p>اطلاعات در همین مرورگر ذخیره می‌شود.</p>
+    <div class="footer-actions">
+      <button id="clearBtn" class="secondary" type="button">پاک‌کردن فهرست</button>
+      <button id="pdfBtn" class="pdf" type="button">↓ دریافت فهرست PDF</button>
+    </div>
+  </footer>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
