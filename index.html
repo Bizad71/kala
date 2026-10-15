@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>انبار  | ثبت کالا</title>
+<title>انبار نئون | ثبت کالا</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
 <main class="app">
   <header class="top">
     <div class="logo">N<span>•</span></div>
-    <div><p class="eyebrow">BIZAD SYSTEM</p><h1>ثبت و مدیریت کالا</h1></div>
+    <div><p class="eyebrow">INVENTORY SYSTEM</p><h1>ثبت و مدیریت کالا</h1></div>
     <div class="counter"><span>تعداد اقلام</span><strong id="itemCount">۰</strong></div>
   </header>
 
@@ -20,7 +20,7 @@
     <form id="itemForm" autocomplete="off">
       <div class="fields">
         <label>نام کالا
-          <input id="productName" type="text" placeholder="نام کالا" required>
+          <input id="productName" type="text" placeholder="مثلاً کابل شبکه" required>
         </label>
         <label>بارکد
           <input id="barcode" type="text" inputmode="numeric" placeholder="بارکد کالا" required>
@@ -43,13 +43,16 @@
           <input id="quantity" type="number" min="0.001" step="any" placeholder="مقدار را وارد کنید" required>
         </label>
       </div>
-      <button class="primary" type="submit"><span>＋</span> ثبت کالا</button>
+      <div class="form-actions">
+        <button class="primary" type="submit"><span>＋</span> ثبت کالا</button>
+        <button id="cancelEditBtn" class="secondary cancel-edit" type="button" hidden>لغو ویرایش</button>
+      </div>
       <p id="message" class="message" role="status" aria-live="polite"></p>
     </form>
   </section>
 
   <section class="list-section">
-    <div class="list-heading"><div><p class="eyebrow">لیست انبار</p><h2>کالاهای ثبت‌شده</h2></div><span id="totalBadge" class="badge">۰ کالا</span></div>
+    <div class="list-heading"><div><p class="eyebrow">YOUR INVENTORY</p><h2>کالاهای ثبت‌شده</h2></div><span id="totalBadge" class="badge">۰ کالا</span></div>
     <div id="emptyState" class="empty"><div class="empty-icon">▤</div><strong>هنوز کالایی ثبت نشده</strong><p>اطلاعات کالا را از بخش بالا وارد کنید.</p></div>
     <div class="table-wrap" id="tableWrap" hidden>
       <table>

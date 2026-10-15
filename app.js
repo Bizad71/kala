@@ -4,6 +4,7 @@ const itemsBody = $("itemsBody");
 const message = $("message");
 const STORAGE_KEY = "neonInventoryItemsV1";
 let items = loadItems();
+let editingIndex = null;
 
 function loadItems() {
   try {
@@ -41,6 +42,12 @@ function render() {
       tr.appendChild(td);
     });
     const actionCell = document.createElement("td");
+    actionCell.className = "actions-cell";
+    const edit = document.createElement("button");
+    edit.type = "button";
+    edit.className = "edit";
+    edit.textContent = "ویرایش";
+    edit.addEventListener("click", () => startEdit(index));
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "delete";
@@ -50,19 +57,56 @@ function render() {
       saveItems(); render();
       showMessage("کالا از فهرست حذف شد.", "success");
     });
-    actionCell.appendChild(remove);
+    actionCell.append(edit, remove);
     tr.appendChild(actionCell);
     itemsBody.appendChild(tr);
   });
 }
+function startEdit(index) {
+  const item = items[index];
+  editingIndex = index;
+  $("productName").value = item.name;
+  $("barcode").value = item.barcode;
+  $("unit").value = item.unit;
+  $("quantity").value = String(item.quantity);
+  form.querySelector('button[type="submit"]').innerHTML = '<span>✓</span> ذخیره تغییرات';
+  $("cancelEditBtn").hidden = false;
+  showMessage("حالت ویرایش فعال است؛ پس از تغییر اطلاعات، ذخیره تغییرات را بزنید.", "warning");
+  $("productName").focus();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function resetEditMode() {
+  editingIndex = null;
+  form.reset();
+  $("unit").value = "عدد";
+  form.querySelector('button[type="submit"]').innerHTML = '<span>＋</span> ثبت کالا';
+  $("cancelEditBtn").hidden = true;
+}
+$("cancelEditBtn").addEventListener("click", () => {
+  resetEditMode();
+  showMessage("ویرایش لغو شد.", "warning");
+});
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   const name = $("productName").value.trim();
   const barcode = $("barcode").value.trim();
   const unit = $("unit").value;
-  const quantity = Number($("quantity").value);
-  if (!name || !barcode || !Number.isFinite(quantity) || quantity <= 0) {
-    showMessage("نام، بارکد و مقدار معتبر را وارد کنید.", "error");
+  const quantityText = $("quantity").value.trim();
+  const quantity = Number(quantityText);
+  // Zero is valid for out-of-stock items; blank and negative values are rejected.
+  if (!name || !barcode || quantityText === "" || !Number.isFinite(quantity) || quantity < 0) {
+    showMessage("نام، بارکد و مقدار معتبر (صفر یا بیشتر) را وارد کنید.", "error");
+    return;
+  }
+  if (editingIndex !== null) {
+    const duplicateIndex = items.findIndex((item, index) => item.barcode === barcode && index !== editingIndex);
+    if (duplicateIndex !== -1) {
+      showMessage("این بارکد برای کالای دیگری ثبت شده است. بارکد تکراری وارد نکنید.", "error");
+      return;
+    }
+    items[editingIndex] = { name, barcode, unit, quantity };
+    saveItems(); render(); resetEditMode();
+    showMessage("تغییرات کالا با موفقیت ذخیره شد.", "success");
     return;
   }
   const existing = items.find(item => item.barcode === barcode);
@@ -86,7 +130,7 @@ form.addEventListener("submit", (event) => {
 $("clearBtn").addEventListener("click", () => {
   if (!items.length) { showMessage("فهرست خالی است.", "warning"); return; }
   if (!confirm("تمام کالاهای ثبت‌شده پاک شوند؟ این کار قابل بازگشت نیست.")) return;
-  items = []; saveItems(); render(); showMessage("فهرست پاک شد.", "success");
+  items = []; resetEditMode(); saveItems(); render(); showMessage("فهرست پاک شد.", "success");
 });
 $("pdfBtn").addEventListener("click", () => {
   if (!items.length) {
